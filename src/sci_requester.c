@@ -99,10 +99,10 @@ void test_requester(unsigned int local_adapter_no,
     msg.flags       = 0;
     ret = send_request(&msg);
     if(ret) {
-        goto send_msg_err;
+        goto send_request_err;
     }
 
-send_msg_err:
+send_request_err:
     SCILDisconnectMsgQueue(&msq.msq, 0);
     pr_devel("Disconnect remote MSQ: " STATUS_COMPLETE);
 

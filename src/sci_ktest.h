@@ -24,7 +24,6 @@ struct msg_ctx {
     unsigned int    flags;
 };
 
-
 void test_requester(unsigned int local_adapter_no, 
                             unsigned int remote_node_id);
 

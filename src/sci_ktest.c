@@ -13,7 +13,7 @@ MODULE_LICENSE("GPL");
 
 static unsigned int local_adapter_no    = 99;
 static unsigned int remote_node_id      = 99;
-static bool is_responder                   = true;
+static bool is_responder                = true;
 
 module_param(local_adapter_no, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 module_param(remote_node_id, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);

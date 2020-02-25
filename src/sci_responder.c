@@ -101,10 +101,10 @@ void test_responder(unsigned int local_adapter_no,
     msg.flags       = 0;
     ret = receive_request(&msg);
     if(ret) {
-        goto receive_msg_err;
+        goto receive_request_err;
     }
 
-receive_msg_err:
+receive_request_err:
     SCILRemoveMsgQueue(&msq.msq, 0);
     pr_devel("Remove local MSQ: "STATUS_COMPLETE);
 
