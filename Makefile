@@ -50,7 +50,7 @@ clean:
 ins:
 	sudo dmesg -C
 	sudo insmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest.ko
+	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_server=N
 	dmesg
 
 rm: 
