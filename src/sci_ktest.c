@@ -5,9 +5,9 @@
 #include <linux/moduleparam.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
+#include <linux/string.h>
 
 #include "scilib.h"
-
 #include "sci_ktest.h"
 
 MODULE_DESCRIPTION("Testing facilities for SCILib");
@@ -25,12 +25,42 @@ module_param(is_server, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 #define SCIL_INIT_FLAGS 0
 #define SCIL_EXIT_FLAGS 0
 
-static int create_msq(struct msq_ctx* msq)
+static int receive_request(struct msg_ctx *msg)
 {
     sci_error_t err;
     pr_devel(STATUS_START);
 
-    err = SCILCreateMsgQueue(&msq->msq, 
+    err = SCILSendMsg(*(msg->msq),
+                        msg->msg,
+                        msg->size,
+                        msg->free,
+                        msg->flags);
+    switch (err)
+    {
+    case SCI_ERR_OK:
+        pr_devel(STATUS_COMPLETE);
+        return 0;
+    case SCI_ERR_EWOULD_BLOCK:
+        pr_devel("SCI_ERR_EWOULD_BLOCK: " STATUS_FAIL);
+        return -42;
+    case SCI_ERR_NOT_CONNECTED:
+        pr_devel("SCI_ERR_NOT_CONNECTED: " STATUS_FAIL);
+        return -42;
+    case SCI_ERR_ILLEGAL_PARAMETER:
+        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " STATUS_FAIL);
+        return -42;
+    default:
+        pr_devel("Unknown error code: " STATUS_FAIL);
+        return -42;
+    }
+}
+
+static int create_msq(struct msq_ctx *msq)
+{
+    sci_error_t err;
+    pr_devel(STATUS_START);
+
+    err = SCILCreateMsgQueue(&(msq->msq), 
                                 msq->localAdapterNo, 
                                 msq->remoteNodeId, 
                                 msq->lmsqId,
@@ -56,10 +86,13 @@ static int create_msq(struct msq_ctx* msq)
     }
 }
 
-static void test_server(void)
+static void test_responder(void)
 {
     int ret;
+    unsigned int size_left;
+    char message[30];
     struct msq_ctx msq;
+    struct msg_ctx msg;
 
     pr_devel(STATUS_START);
 
@@ -79,6 +112,19 @@ static void test_server(void)
         goto create_msq_err;
     }
 
+    /* Receive message from MSQ */
+    memset(&msg, 0, sizeof(struct msg_ctx));
+    msg.msq         = &msq.msq;
+    msg.msg         = &message;
+    msg.size        = strlen(message);
+    msg.free        = &size_left;
+    msg.flags       = 0;
+    ret = receive_request(&msg);
+    if(ret) {
+        goto receive_msg_err;
+    }
+
+receive_msg_err:
     SCILRemoveMsgQueue(&msq.msq, 0);
     pr_devel("Remove local MSQ: "STATUS_COMPLETE);
 
@@ -87,12 +133,39 @@ create_msq_err:
     return;
 }
 
-static int connect_msq(struct msq_ctx* msq)
+static int send_request(struct msg_ctx *msg)
 {
     sci_error_t err;
     pr_devel(STATUS_START);
 
-    err = SCILConnectMsgQueue(&msq->msq, 
+    err = SCILSendMsg(*(msg->msq),
+                        msg->msg,
+                        msg->size,
+                        msg->free,
+                        msg->flags);
+    switch (err)
+    {
+    case SCI_ERR_OK:
+        pr_devel(STATUS_COMPLETE);
+        return 0;
+    case SCI_ERR_EWOULD_BLOCK:
+        pr_devel("SCI_ERR_EWOULD_BLOCK: " STATUS_FAIL);
+        return -42;
+    case SCI_ERR_NOT_CONNECTED:
+        pr_devel("SCI_ERR_NOT_CONNECTED: " STATUS_FAIL);
+        return -42;
+    default:
+        pr_devel("Unknown error code: " STATUS_FAIL);
+        return -42;
+    }
+}
+
+static int connect_msq(struct msq_ctx *msq)
+{
+    sci_error_t err;
+    pr_devel(STATUS_START);
+
+    err = SCILConnectMsgQueue(&(msq->msq), 
                                 msq->localAdapterNo, 
                                 msq->remoteNodeId, 
                                 msq->lmsqId,
@@ -118,10 +191,13 @@ static int connect_msq(struct msq_ctx* msq)
     }
 }
 
-static void test_client(void)
+static void test_requester(void)
 {
     int ret;
+    unsigned int size_free;
+    char message[30] = "Hello There!";
     struct msq_ctx msq;
+    struct msg_ctx msg;
 
     pr_devel(STATUS_START);
 
@@ -141,6 +217,19 @@ static void test_client(void)
         goto connect_msq_err;
     }
 
+    /* Send message to MSQ */
+    memset(&msg, 0, sizeof(struct msg_ctx));
+    msg.msq         = &msq.msq;
+    msg.msg         = &message;
+    msg.size        = strlen(message);
+    msg.free        = &size_free;
+    msg.flags       = 0;
+    ret = send_request(&msg);
+    if(ret) {
+        goto send_msg_err;
+    }
+
+send_msg_err:
     SCILDisconnectMsgQueue(&msq.msq, 0);
     pr_devel("Disconnect remote MSQ: " STATUS_COMPLETE);
 
@@ -161,9 +250,9 @@ static int __init sci_ktest_init(void)
     }
 
     if(is_server) {
-        test_server();
+        test_responder();
     } else {
-        test_client();
+        test_requester();
     }
 
     pr_devel(STATUS_COMPLETE);
