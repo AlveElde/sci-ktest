@@ -1,17 +1,18 @@
 obj-m += sci_ktest.o
 
 SRC := ./src
-sci_ktest-objs := $(SRC)/sci_ktest.o
+sci_ktest-objs := $(SRC)/sci_ktest.o $(SRC)/sci_requester.o  $(SRC)/sci_responder.o
 
 DIS_SRC=/home/alve/SyncThingFolders/SyncThingCaseSensitive/royn/DIS/src
 MOD_DIR=$(DIS_SRC)/.tmp_versions
+
 DIS_SYMBOLS=$(DIS_SRC)/IRM_GX/drv/src/LINUX/Module.symvers
 KOSIF_SYMBOLS=$(DIS_SRC)/COMMON/osif/kernel/src/LINUX/Module.symvers
 SCI_SYMBOLS=$(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/Module.symvers
 
-
-CPPFLAGS += -D_DIS_KERNEL_ -DOS_IS_LINUX -DCPU_ADDR_IS_64_BIT \
-            -DLINUX -DUNIX -DCPU_ARCH_IS_X86_64 -DADAPTER_IS_PX -DINTERFACE_IS_GENIF
+CPPFLAGS += -D_DIS_KERNEL_ -DOS_IS_LINUX -DCPU_ADDR_IS_64_BIT 	\
+            -DLINUX -DUNIX -DCPU_ARCH_IS_X86_64 -DADAPTER_IS_PX \
+			-DINTERFACE_IS_GENIF -DDEBUG
 
 EXTRA_CFLAGS += .                                               \
                 -I$(DIS_SRC)/include                   			\
@@ -34,7 +35,6 @@ EXTRA_CFLAGS += .                                               \
 
 EXTRA_CFLAGS += ${CPPFLAGS}
 
-
 all:
 	cp -f ${DIS_SYMBOLS} ./ || :
 	cat ${KOSIF_SYMBOLS} >> ./Module.symvers || :
@@ -50,10 +50,10 @@ clean:
 ins:
 	sudo dmesg -C
 	sudo insmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_server=N
+	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_responder=Y
 	dmesg
 
-rm: 
+rm:
 	sudo dmesg -C
 	sudo rmmod sci_ktest.ko
 	sudo rmmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko

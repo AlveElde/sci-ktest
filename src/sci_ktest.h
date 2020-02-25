@@ -1,3 +1,5 @@
+#include "scilib.h"
+
 #define STATUS_START    "Started.\n"
 #define STATUS_COMPLETE "Completed.\n"
 #define STATUS_FAIL     "Failed.\n"
@@ -21,3 +23,10 @@ struct msg_ctx {
     unsigned int    *free;
     unsigned int    flags;
 };
+
+
+void test_requester(unsigned int local_adapter_no, 
+                            unsigned int remote_node_id);
+
+void test_responder(unsigned int local_adapter_no, 
+                            unsigned int remote_node_id);
