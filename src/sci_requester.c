@@ -1,5 +1,4 @@
-
-#define pr_fmt(fmt) KBUILD_MODNAME ": fn: %s, ln: %d: " fmt, __func__, __LINE__
+#include "pr_fmt.h"
 
 #include <linux/string.h>
 
@@ -8,7 +7,7 @@
 int send_request(struct msg_ctx *msg)
 {
     sci_error_t err;
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
 
     err = SCILSendMsg(*(msg->msq),
                         msg->msg,
@@ -18,16 +17,16 @@ int send_request(struct msg_ctx *msg)
     switch (err)
     {
     case SCI_ERR_OK:
-        pr_devel(STATUS_COMPLETE);
+        pr_devel(DIS_STATUS_COMPLETE);
         return 0;
     case SCI_ERR_EWOULD_BLOCK:
-        pr_devel("SCI_ERR_EWOULD_BLOCK: " STATUS_FAIL);
+        pr_devel("SCI_ERR_EWOULD_BLOCK: " DIS_STATUS_FAIL);
         return -42;
     case SCI_ERR_NOT_CONNECTED:
-        pr_devel("SCI_ERR_NOT_CONNECTED: " STATUS_FAIL);
+        pr_devel("SCI_ERR_NOT_CONNECTED: " DIS_STATUS_FAIL);
         return -42;
     default:
-        pr_devel("Unknown error code: " STATUS_FAIL);
+        pr_devel("Unknown error code: " DIS_STATUS_FAIL);
         return -42;
     }
 }
@@ -35,7 +34,7 @@ int send_request(struct msg_ctx *msg)
 int connect_msq(struct msq_ctx *msq)
 {
     sci_error_t err;
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
 
     err = SCILConnectMsgQueue(&(msq->msq), 
                                 msq->localAdapterNo, 
@@ -49,16 +48,16 @@ int connect_msq(struct msq_ctx *msq)
     switch (err)
     {
     case SCI_ERR_OK:
-        pr_devel(STATUS_COMPLETE);
+        pr_devel(DIS_STATUS_COMPLETE);
         return 0;
     case SCI_ERR_CONNECTION_REFUSED:
-        pr_devel("SCI_ERR_CONNECTION_REFUSED: " STATUS_FAIL);
+        pr_devel("SCI_ERR_CONNECTION_REFUSED: " DIS_STATUS_FAIL);
         return -42;
     case SCI_ERR_NO_SUCH_SEGMENT:
-        pr_devel("SCI_ERR_NOSPC: " STATUS_FAIL);
+        pr_devel("SCI_ERR_NOSPC: " DIS_STATUS_FAIL);
         return -42;
     default:
-        pr_devel("Unknown error code: " STATUS_FAIL);
+        pr_devel("Unknown error code: " DIS_STATUS_FAIL);
         return -42;
     }
 }
@@ -72,7 +71,7 @@ void test_requester(unsigned int local_adapter_no,
     struct msq_ctx msq;
     struct msg_ctx msg;
 
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
 
     /* Connect to a remote MSQ */
     memset(&msq, 0, sizeof(struct msq_ctx));
@@ -104,9 +103,9 @@ void test_requester(unsigned int local_adapter_no,
 
 send_request_err:
     SCILDisconnectMsgQueue(&msq.msq, 0);
-    pr_devel("Disconnect remote MSQ: " STATUS_COMPLETE);
+    pr_devel("Disconnect remote MSQ: " DIS_STATUS_COMPLETE);
 
 connect_msq_err:
-    pr_devel(STATUS_COMPLETE);
+    pr_devel(DIS_STATUS_COMPLETE);
     return;
 }

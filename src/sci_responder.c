@@ -1,4 +1,4 @@
-#define pr_fmt(fmt) KBUILD_MODNAME ": fn: %s, ln: %d: " fmt, __func__, __LINE__
+#include "pr_fmt.h"
 
 #include <linux/string.h>
 
@@ -7,7 +7,7 @@
 int receive_request(struct msg_ctx *msg)
 {
     sci_error_t err;
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
 
     err = SCILSendMsg(*(msg->msq),
                         msg->msg,
@@ -17,19 +17,19 @@ int receive_request(struct msg_ctx *msg)
     switch (err)
     {
     case SCI_ERR_OK:
-        pr_devel(STATUS_COMPLETE);
+        pr_devel(DIS_STATUS_COMPLETE);
         return 0;
     case SCI_ERR_EWOULD_BLOCK:
-        pr_devel("SCI_ERR_EWOULD_BLOCK: " STATUS_FAIL);
+        pr_devel("SCI_ERR_EWOULD_BLOCK: " DIS_STATUS_FAIL);
         return -42;
     case SCI_ERR_NOT_CONNECTED:
-        pr_devel("SCI_ERR_NOT_CONNECTED: " STATUS_FAIL);
+        pr_devel("SCI_ERR_NOT_CONNECTED: " DIS_STATUS_FAIL);
         return -42;
     case SCI_ERR_ILLEGAL_PARAMETER:
-        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " STATUS_FAIL);
+        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
         return -42;
     default:
-        pr_devel("Unknown error code: " STATUS_FAIL);
+        pr_devel("Unknown error code: " DIS_STATUS_FAIL);
         return -42;
     }
 }
@@ -37,7 +37,7 @@ int receive_request(struct msg_ctx *msg)
 int create_msq(struct msq_ctx *msq)
 {
     sci_error_t err;
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
 
     err = SCILCreateMsgQueue(&(msq->msq), 
                                 msq->localAdapterNo, 
@@ -51,16 +51,16 @@ int create_msq(struct msq_ctx *msq)
     switch (err)
     {
     case SCI_ERR_OK:
-        pr_devel(STATUS_COMPLETE);
+        pr_devel(DIS_STATUS_COMPLETE);
         return 0;
     case SCI_ERR_ILLEGAL_PARAMETER:
-        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " STATUS_FAIL);
+        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
         return -42;
     case SCI_ERR_NOSPC:
-        pr_devel("SCI_ERR_NOSPC: " STATUS_FAIL);
+        pr_devel("SCI_ERR_NOSPC: " DIS_STATUS_FAIL);
         return -42;
     default:
-        pr_devel("Unknown error code: " STATUS_FAIL);
+        pr_devel("Unknown error code: " DIS_STATUS_FAIL);
         return -42;
     }
 }
@@ -74,7 +74,7 @@ void test_responder(unsigned int local_adapter_no,
     struct msq_ctx msq;
     struct msg_ctx msg;
 
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
 
     /* Create a local MSQ */
     memset(&msq, 0, sizeof(struct msq_ctx));
@@ -106,9 +106,9 @@ void test_responder(unsigned int local_adapter_no,
 
 receive_request_err:
     SCILRemoveMsgQueue(&msq.msq, 0);
-    pr_devel("Remove local MSQ: "STATUS_COMPLETE);
+    pr_devel("Remove local MSQ: "DIS_STATUS_COMPLETE);
 
 create_msq_err:
-    pr_devel(STATUS_COMPLETE);
+    pr_devel(DIS_STATUS_COMPLETE);
     return;
 }

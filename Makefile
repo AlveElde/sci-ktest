@@ -47,18 +47,20 @@ install:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-ins:
+req:
+	sudo dmesg -C
+	sudo insmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
+	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_responder=N
+	sudo rmmod sci_ktest.ko
+	sudo rmmod dis_msq.ko
+	dmesg
+
+res:
 	sudo dmesg -C
 	sudo insmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
 	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_responder=Y
-	dmesg
-
-rm:
-	sudo dmesg -C
 	sudo rmmod sci_ktest.ko
-	sudo rmmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
+	sudo rmmod dis_msq.ko
 	dmesg
 
-test: ins rm
-
-retest: clean all test
+full: clean all req res

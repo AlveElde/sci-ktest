@@ -1,4 +1,4 @@
-#define pr_fmt(fmt) KBUILD_MODNAME ": fn: %s, ln: %d: " fmt, __func__, __LINE__
+#include "pr_fmt.h"
 
 #include <linux/module.h>
 #include <linux/moduleparam.h>
@@ -25,11 +25,11 @@ module_param(is_responder, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 static int __init sci_ktest_init(void)
 {
     sci_error_t ret;
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
     
     ret = SCILInit(SCIL_INIT_FLAGS);
     if(ret != SCI_ERR_OK) {
-        pr_devel(STATUS_FAIL);
+        pr_devel(DIS_STATUS_FAIL);
         return 0;
     }
 
@@ -39,22 +39,22 @@ static int __init sci_ktest_init(void)
         test_requester(local_adapter_no, remote_node_id);
     }
 
-    pr_devel(STATUS_COMPLETE);
+    pr_devel(DIS_STATUS_COMPLETE);
     return 0;
 }
 
 static void __exit sci_ktest_exit(void)
 {
     sci_error_t ret;
-    pr_devel(STATUS_START);
+    pr_devel(DIS_STATUS_START);
     
     ret = SCILDestroy(SCIL_EXIT_FLAGS);
     if(ret != SCI_ERR_OK) {
-        pr_devel(STATUS_FAIL);
+        pr_devel(DIS_STATUS_FAIL);
         return;
     }
 
-    pr_devel(STATUS_COMPLETE);
+    pr_devel(DIS_STATUS_COMPLETE);
 }
 
 module_init(sci_ktest_init);

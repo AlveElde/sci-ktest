@@ -1,9 +1,5 @@
 #include "scilib.h"
 
-#define STATUS_START    "Started.\n"
-#define STATUS_COMPLETE "Completed.\n"
-#define STATUS_FAIL     "Failed.\n"
-
 struct msq_ctx {
     sci_msq_queue_t msq;
     unsigned int    localAdapterNo; 
