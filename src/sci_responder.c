@@ -4,34 +4,44 @@
 
 #include "sci_ktest.h"
 
-int receive_request(struct msg_ctx *msg)
+int receive_request(struct msg_ctx *msg, int retry_max)
 {
+    int i;
     sci_error_t err;
     pr_devel(DIS_STATUS_START);
 
-    err = SCILSendMsg(*(msg->msq),
-                        msg->msg,
-                        msg->size,
-                        msg->free,
-                        msg->flags);
-    switch (err)
-    {
-    case SCI_ERR_OK:
-        pr_devel(DIS_STATUS_COMPLETE);
-        return 0;
-    case SCI_ERR_EWOULD_BLOCK:
-        pr_devel("SCI_ERR_EWOULD_BLOCK: " DIS_STATUS_FAIL);
-        return -42;
-    case SCI_ERR_NOT_CONNECTED:
-        pr_devel("SCI_ERR_NOT_CONNECTED: " DIS_STATUS_FAIL);
-        return -42;
-    case SCI_ERR_ILLEGAL_PARAMETER:
-        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
-        return -42;
-    default:
-        pr_devel("Unknown error code: " DIS_STATUS_FAIL);
-        return -42;
+    for(i = 0; i < retry_max; i++) {
+        err = SCILReceiveMsg(*(msg->msq),
+                            msg->msg,
+                            msg->size,
+                            msg->free,
+                            msg->flags);
+        switch (err)
+        {
+        case SCI_ERR_OK:
+            pr_devel(DIS_STATUS_COMPLETE);
+            return 0;
+        case SCI_ERR_EWOULD_BLOCK:
+            pr_devel("SCI_ERR_EWOULD_BLOCK");
+            break;
+        case SCI_ERR_NOT_CONNECTED:
+            pr_devel("SCI_ERR_NOT_CONNECTED: " DIS_STATUS_FAIL);
+            return -42;
+        case SCI_ERR_ILLEGAL_PARAMETER:
+            pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
+            return -42;
+        default:
+            pr_devel("Unknown error code: " DIS_STATUS_FAIL);
+            return -42;
+        }
+
+        if(i+1 < retry_max) {
+            msleep(1000);
+        }
     }
+
+    pr_devel(DIS_STATUS_FAIL);
+    return -42;
 }
 
 int create_msq(struct msq_ctx *msq, int retry_max)
@@ -81,7 +91,7 @@ void test_responder(unsigned int local_adapter_no,
 {
     int ret;
     unsigned int size_left;
-    char message[30];
+    char message[256];
     struct msq_ctx msq;
     struct msg_ctx msg;
 
@@ -106,14 +116,17 @@ void test_responder(unsigned int local_adapter_no,
     /* Receive message from MSQ */
     memset(&msg, 0, sizeof(struct msg_ctx));
     msg.msq         = &msq.msq;
-    msg.msg         = &message;
-    msg.size        = strlen(message);
+    msg.msg         = message;
+    msg.size        = MSG_LEN * sizeof(char);
     msg.free        = &size_left;
     msg.flags       = 0;
-    ret = receive_request(&msg);
+    ret = receive_request(&msg, 10);
     if(ret) {
         goto receive_request_err;
     }
+
+    pr_info("Message received from requester: %s", message);
+    pr_info("Bytes left in buffer: %d", size_left);
 
 receive_request_err:
     SCILRemoveMsgQueue(&msq.msq, 0);

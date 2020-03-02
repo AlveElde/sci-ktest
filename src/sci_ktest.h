@@ -1,5 +1,8 @@
 #include "scilib.h"
 
+#define MSG "Hello There!\n"
+#define MSG_LEN strlen(MSG) + 1
+
 struct msq_ctx {
     sci_msq_queue_t msq;
     unsigned int    localAdapterNo; 

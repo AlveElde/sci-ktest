@@ -79,7 +79,7 @@ void test_requester(unsigned int local_adapter_no,
 {
     int ret;
     unsigned int size_free;
-    char message[30] = "Hello There!";
+    char message[256] = MSG;
     struct msq_ctx msq;
     struct msg_ctx msg;
 
@@ -104,14 +104,17 @@ void test_requester(unsigned int local_adapter_no,
     /* Send message to MSQ */
     memset(&msg, 0, sizeof(struct msg_ctx));
     msg.msq         = &msq.msq;
-    msg.msg         = &message;
-    msg.size        = strlen(message);
+    msg.msg         = message;
+    msg.size        = MSG_LEN * sizeof(char);
     msg.free        = &size_free;
     msg.flags       = 0;
     ret = send_request(&msg);
     if(ret) {
         goto send_request_err;
     }
+
+    pr_info("Message sent to responder: %s", message);
+    pr_info("Bytes free in buffer: %d", size_free);
 
 send_request_err:
     SCILDisconnectMsgQueue(&msq.msq, 0);
