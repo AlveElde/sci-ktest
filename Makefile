@@ -3,7 +3,7 @@ obj-m += sci_ktest.o
 SRC := ./src
 sci_ktest-objs := $(SRC)/sci_ktest.o $(SRC)/sci_requester.o  $(SRC)/sci_responder.o
 
-DIS_SRC=/home/alve/SyncThingFolders/SyncThingCaseSensitive/royn/DIS/src
+DIS_SRC=/home/alve/royn-lts/DIS/src
 MOD_DIR=$(DIS_SRC)/.tmp_versions
 
 DIS_SYMBOLS=$(DIS_SRC)/IRM_GX/drv/src/LINUX/Module.symvers
@@ -50,7 +50,7 @@ clean:
 req:
 	sudo dmesg -C
 	sudo insmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_responder=N
+	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=4 is_responder=N
 	sudo rmmod sci_ktest.ko
 	sudo rmmod dis_msq.ko
 	dmesg
@@ -58,7 +58,7 @@ req:
 res:
 	sudo dmesg -C
 	sudo insmod $(DIS_SRC)/SCI_SOCKET/scilib/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=99 is_responder=Y
+	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=8 is_responder=Y
 	sudo rmmod sci_ktest.ko
 	sudo rmmod dis_msq.ko
 	dmesg

@@ -34,35 +34,46 @@ int receive_request(struct msg_ctx *msg)
     }
 }
 
-int create_msq(struct msq_ctx *msq)
+int create_msq(struct msq_ctx *msq, int retry_max)
 {
+    int try_count = 0;
     sci_error_t err;
     pr_devel(DIS_STATUS_START);
 
-    err = SCILCreateMsgQueue(&(msq->msq), 
-                                msq->localAdapterNo, 
-                                msq->remoteNodeId, 
-                                msq->lmsqId,
-                                msq->rmsqId, 
-                                msq->maxMsgCount, 
-                                msq->maxMsgSize, 
-                                msq->timeout, 
-                                msq->flags);
-    switch (err)
-    {
-    case SCI_ERR_OK:
-        pr_devel(DIS_STATUS_COMPLETE);
-        return 0;
-    case SCI_ERR_ILLEGAL_PARAMETER:
-        pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
-        return -42;
-    case SCI_ERR_NOSPC:
-        pr_devel("SCI_ERR_NOSPC: " DIS_STATUS_FAIL);
-        return -42;
-    default:
-        pr_devel("Unknown error code: " DIS_STATUS_FAIL);
-        return -42;
+    while(try_count < retry_max) {
+        err = SCILCreateMsgQueue(&(msq->msq), 
+                                    msq->localAdapterNo, 
+                                    msq->remoteNodeId, 
+                                    msq->lmsqId,
+                                    msq->rmsqId, 
+                                    msq->maxMsgCount, 
+                                    msq->maxMsgSize, 
+                                    msq->timeout, 
+                                    msq->flags);
+        switch (err)
+        {
+        case SCI_ERR_OK:
+            pr_devel(DIS_STATUS_COMPLETE);
+            return 0;
+        case SCI_ERR_ILLEGAL_PARAMETER:
+            pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
+            return -42;
+        case SCI_ERR_NOSPC:
+            pr_devel("SCI_ERR_NOSPC: " DIS_STATUS_FAIL);
+            return -42;
+        default:
+            pr_devel("Sleeping and retrying.. %d", err);
+        }
+
+        try_count++;
+        if(try_count < retry_max) {
+            msleep(1000);
+        }
     }
+
+    pr_devel(DIS_STATUS_FAIL);
+    return -42;
+
 }
 
 void test_responder(unsigned int local_adapter_no, 
@@ -81,13 +92,13 @@ void test_responder(unsigned int local_adapter_no,
     msq.msq               = NULL;
     msq.localAdapterNo    = local_adapter_no;
     msq.remoteNodeId      = remote_node_id;
-    msq.lmsqId            = 1;
-    msq.rmsqId            = 2;
+    msq.lmsqId            = 444;
+    msq.rmsqId            = 444;
     msq.maxMsgCount       = 16;
     msq.maxMsgSize        = 128;
-    msq.timeout           = 10;
+    msq.timeout           = 1234;
     msq.flags             = 0;
-    ret = create_msq(&msq);
+    ret = create_msq(&msq, 10);
     if(ret) {
         goto create_msq_err;
     }
