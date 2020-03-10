@@ -35,7 +35,7 @@ int receive_request(struct msg_ctx *msg, int retry_max)
             return -42;
         }
 
-        if(i+1 < retry_max) {
+        if(i + 1 < retry_max) {
             msleep(1000);
         }
     }
@@ -46,11 +46,11 @@ int receive_request(struct msg_ctx *msg, int retry_max)
 
 int create_msq(struct msq_ctx *msq, int retry_max)
 {
-    int try_count = 0;
+    int i = 0;
     sci_error_t err;
     pr_devel(DIS_STATUS_START);
 
-    while(try_count < retry_max) {
+    for(i = 0; i < retry_max; i++) {
         err = SCILCreateMsgQueue(&(msq->msq), 
                                     msq->localAdapterNo, 
                                     msq->remoteNodeId, 
@@ -75,8 +75,7 @@ int create_msq(struct msq_ctx *msq, int retry_max)
             pr_devel("Sleeping and retrying.. %d", err);
         }
 
-        try_count++;
-        if(try_count < retry_max) {
+        if(i + 1 < retry_max) {
             msleep(1000);
         }
     }
