@@ -23,8 +23,8 @@ struct msg_ctx {
     unsigned int    flags;
 };
 
-void test_requester(unsigned int local_adapter_no, 
-                            unsigned int remote_node_id);
 
-void test_responder(unsigned int local_adapter_no, 
-                            unsigned int remote_node_id);
+int create_msq(struct msq_ctx *msq, int retry_max);
+int connect_msq(struct msq_ctx *msq, int retry_max);
+int send_request(struct msg_ctx *msg);
+int receive_request(struct msg_ctx *msg, int retry_max);

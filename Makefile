@@ -1,15 +1,15 @@
-obj-m += sci_ktest.o
+obj-m += sci_ktest_mod.o
 
 SRC := ./src
-sci_ktest-objs := $(SRC)/sci_ktest.o $(SRC)/sci_requester.o  $(SRC)/sci_responder.o
+sci_ktest_mod-objs := $(SRC)/sci_ktest.o $(SRC)/sci_msq.o
 
 DIS_SRC=/opt/DIS
 SCI_SRC=/home/alve/scilib
 KERNEL_SRC=/home/alve/kernel
 OLD_DIS_SRC=/home/alve/royn-lts/DIS/src
-MOD_DIR=$(OLD_DIS_SRC)/.tmp_versions
 
-SCI_SYMBOLS=$(SCI_SRC)/GENIF/LINUX/Module.symvers
+SCI_SYMBOLS := $(SCI_SRC)/GENIF/LINUX/Module.symvers
+KBUILD_EXTRA_SYMBOLS += $(SCI_SYMBOLS)
 
 CPPFLAGS += -D_DIS_KERNEL_ -DOS_IS_LINUX -DCPU_ADDR_IS_64_BIT 	\
             -DLINUX -DUNIX -DCPU_ARCH_IS_X86_64 -DADAPTER_IS_PX \
@@ -24,9 +24,9 @@ EXTRA_CFLAGS += .                                               	\
                 -I$(SCI_SRC)/GENIF/LINUX							\
                 -I$(SCI_SRC)/GENIF/LINUX/os							\
                 -I$(SCI_SRC)/SISCI									\
-				-I$(KERNEL_SRC)/.               	\
-            	-I$(KERNEL_SRC)/include       	\
-                -I$(KERNEL_SRC)/include/LINUX 	\
+				-I$(KERNEL_SRC)/.               					\
+            	-I$(KERNEL_SRC)/include       						\
+                -I$(KERNEL_SRC)/include/LINUX 						\
                 -I$(OLD_DIS_SRC)/IRM_GX/drv/src                   	\
                 -I$(OLD_DIS_SRC)/IRM_GX/drv/include               	\
                 -I$(OLD_DIS_SRC)/IRM_GX/drv/src/LINUX             	\
@@ -37,8 +37,7 @@ EXTRA_CFLAGS += .                                               	\
 EXTRA_CFLAGS += ${CPPFLAGS}
 
 all:
-	cp -f ${SCI_SYMBOLS} ./ || :
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) KBUILD_EXTRA_SYMBOLS=$(SCI_SYMBOLS) modules
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 install:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules_install
@@ -46,20 +45,20 @@ install:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-ins-req:
+ins-req: all
 	sudo dmesg -C
 	sudo insmod $(SCI_SRC)/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=4 is_responder=N
+	sudo insmod sci_ktest_mod.ko local_adapter_no=0 remote_node_id=4 is_responder=N
 
-ins-res:
+ins-res: all
 	sudo dmesg -C
 	sudo insmod $(SCI_SRC)/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest.ko local_adapter_no=0 remote_node_id=8 is_responder=Y
+	sudo insmod sci_ktest_mod.ko local_adapter_no=0 remote_node_id=8 is_responder=Y
 
 rm: 
-	sudo rmmod sci_ktest.ko
+	sudo rmmod sci_ktest_mod.ko
 	sudo rmmod dis_msq.ko
-	dmesg
+	dmesg -t
 
 req: ins-req rm
 
