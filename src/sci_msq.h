@@ -1,7 +1,6 @@
 #include "scilib.h"
 
-#define MSG "Hello There!\n"
-#define MSG_LEN strlen(MSG) + 1
+
 
 struct msq_ctx {
     sci_msq_queue_t msq;
@@ -22,7 +21,6 @@ struct msg_ctx {
     unsigned int    *free;
     unsigned int    flags;
 };
-
 
 int create_msq(struct msq_ctx *msq, int retry_max);
 int connect_msq(struct msq_ctx *msq, int retry_max);

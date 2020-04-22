@@ -45,15 +45,15 @@ install:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-ins-req: all
+ins-req:
 	sudo dmesg -C
-	sudo insmod $(SCI_SRC)/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest_mod.ko local_adapter_no=0 remote_node_id=4 is_responder=N
+	# sudo insmod $(SCI_SRC)/GENIF/LINUX/dis_msq.ko
+	sudo insmod sci_ktest_mod.ko local_adapter_no=0 remote_node_id=4 is_initiator=N
 
-ins-res: all
+ins-res:
 	sudo dmesg -C
 	sudo insmod $(SCI_SRC)/GENIF/LINUX/dis_msq.ko
-	sudo insmod sci_ktest_mod.ko local_adapter_no=0 remote_node_id=8 is_responder=Y
+	sudo insmod sci_ktest_mod.ko local_adapter_no=0 remote_node_id=8 is_initiator=Y
 
 rm: 
 	sudo rmmod sci_ktest_mod.ko

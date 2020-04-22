@@ -27,10 +27,10 @@ int create_msq(struct msq_ctx *msq, int retry_max)
             return 0;
         case SCI_ERR_ILLEGAL_PARAMETER:
             pr_devel("SCI_ERR_ILLEGAL_PARAMETER: " DIS_STATUS_FAIL);
-            return -42;
+            // return -42;
         case SCI_ERR_NOSPC:
             pr_devel("SCI_ERR_NOSPC: " DIS_STATUS_FAIL);
-            return -42;
+            // return -42;
         default:
             pr_devel("Sleeping and retrying.. %d", err);
         }
@@ -68,10 +68,10 @@ int connect_msq(struct msq_ctx *msq, int retry_max)
             return 0;
         case SCI_ERR_CONNECTION_REFUSED:
             pr_devel("SCI_ERR_CONNECTION_REFUSED: " DIS_STATUS_FAIL);
-            return -42;
+            // return -42;
         case SCI_ERR_NO_SUCH_SEGMENT:
-            pr_devel("SCI_ERR_NOSPC: " DIS_STATUS_FAIL);
-            return -42;
+            pr_devel("SCI_ERR_NO_SUCH_SEGMENT: " DIS_STATUS_FAIL);
+            // return -42;
         default:
             pr_devel("Sleeping and retrying.. %d", err);
         }
@@ -120,10 +120,10 @@ int receive_request(struct msg_ctx *msg, int retry_max)
 
     for(i = 0; i < retry_max; i++) {
         err = SCILReceiveMsg(*(msg->msq),
-                            msg->msg,
-                            msg->size,
-                            msg->free,
-                            msg->flags);
+                                msg->msg,
+                                msg->size,
+                                msg->free,
+                                msg->flags);
         switch (err)
         {
         case SCI_ERR_OK:
